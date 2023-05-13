@@ -1,0 +1,3 @@
+include README.md
+include LICENSE
+include src/transformers_agent_ui/py.typed
