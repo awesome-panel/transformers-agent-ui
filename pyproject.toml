@@ -6,7 +6,7 @@ name = "transformers-agent-ui"
 description = "This package makes it super simple to do exploratory data analysis and develop high-quality Panel data apps ..."
 readme = "README.md"
 requires-python = ">=3.7"
-keywords = ["python", "holoviz", "panel", "dataviz", "dataapp", "dashboard", "datascience", "analytics"]
+keywords = ["python", "huggingface", "transformers", "deeplearning", "ai", "agent", "holoviz", "panel"]
 license = {file = "LICENSE"}
 classifiers = [
     "License :: OSI Approved :: MIT License",
@@ -34,8 +34,10 @@ classifiers = [
     "Topic :: Software Development :: Libraries",
 ]
 dependencies = [
-    "bokeh<3.0",
-    "panel<1.0",
+    "openai",
+    "panel>=1.0.0rc8",
+    "param<2.0",
+    "transformers[agents]",
 ]
 dynamic = ["version"]
 
@@ -45,7 +47,8 @@ authors = [
 
 [project.optional-dependencies]
 dev = [
-    "awesome-panel-cli[dev]"
+    "awesome-panel-cli[dev]",
+    "types-Pillow",
 ]
 examples = [
     "awesome-panel-cli",
@@ -92,6 +95,7 @@ module = [
     "hvplot.*",
     "param.*",
     "pyviz_comms.*",
+    "transformers.*",
 ]
 ignore_missing_imports = true
 

@@ -163,3 +163,7 @@ pip-wheel-metadata/
 build/
 test_results/
 script.py
+apps/app.py
+pyproject.toml
+TransformersAgent.db
+assets/
