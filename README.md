@@ -118,14 +118,14 @@ I would love to support and receive your contributions. Thanks.
 - [x] Deploy to Pypi. DONE - See [link](https://pypi.org/project/transformers-agent-ui/)
 - [x] Rename `running` parameter to `is_running` parameter
 - [x] Move use_cache from settings tab to editor tab
-- [ ] Save run prints to store
+- [x] Save run prints to store
 - [ ] Redirect log to Terminal AND to stdout for easier debugging
-- [ ] Build a sample store and collect data on runs
 - [ ] Support dynamic arguments (text, image etc) to run function
-  - [ ] As inputs to .run
+  - [x] As inputs to .run
   - [ ] Create/ Update from file
   - [ ] Create/ Update from output
   - [ ] Delete/ Remove
+- [ ] Get better feedback on run exceptions back
 - [ ] Test it on lots of examples
   - [ ] Add specific support for reading and writing more types. Currently most things are pickled.
 - [ ] Add three examples to make it easy to get started
@@ -137,6 +137,7 @@ I would love to support and receive your contributions. Thanks.
     - See also [hf #23354](https://github.com/huggingface/transformers/issues/23354)
   - [ ] Restrict store to user session
 - [ ] Deploy to Hugging Face
+- [ ] Build a sample store and collect data on runs
 
 ## Maybe list
 

@@ -10,9 +10,11 @@ import param
 from transformers import HfAgent, OpenAiAgent
 
 from transformers_agent_ui.domain.config import AGENT_CONFIGURATION
+from transformers_agent_ui.domain.custom_run import run
+from transformers_agent_ui.domain.run_input import RunInput
+from transformers_agent_ui.domain.run_output import RunOutput
 from transformers_agent_ui.domain.store import Store
 from transformers_agent_ui.domain.token import TokenManager
-from transformers_agent_ui.domain.run_input import RunInput
 
 log = logging.getLogger(__name__)
 
@@ -35,11 +37,10 @@ def _get_agent(agent, model, token):
     raise ValueError(f"The agent {agent} and model {model} is not supported")
 
 
-class TransformersAgent(RunInput, param.Parameterized):
+class TransformersAgent(RunInput, RunOutput, param.Parameterized):
     """A wrapper of the Hugging Face transformers agent. See
     https://huggingface.co/docs/transformers/transformers_agents"""
 
-    result = param.Parameter(precedence=-1)
     remote = param.Boolean(default=True, readonly=True)
 
     is_running = param.Boolean()
@@ -65,14 +66,41 @@ class TransformersAgent(RunInput, param.Parameterized):
         """Returns the Agent"""
         return _get_agent(agent=self.agent, model=self.model, token=token)
 
+    def _get_run_kwargs(self):
+        """Returns the kwargs with the 'output' added"""
+        if self.kwargs:
+            kwargs = self.kwargs.copy()
+        else:
+            kwargs = {}
+        if self.value and "output" not in kwargs:
+            kwargs["output"] = self.value
+        return kwargs
+
     def run(self):
         """Runs the agent, model on the `value`"""
         exception_raised = False
+
+        org_prompt = self.prompt
+        org_code = self.code
+        org_explanation = self.explanation
+        org_value = self.value
+
+        kwargs = self._get_run_kwargs()
+
+        self.value = None
+        self.prompt = "Coming up ..."
+        self.code = "Coming up ..."
+        self.explanation = "Coming up ..."
         self.is_running = True
+
         if self.use_cache and self.cache.exists(
-            agent=self.agent, model=self.model, query=self.task
+            agent=self.agent, model=self.model, task=self.task, kwargs=self.kwargs
         ):
-            result = self.cache.read(agent=self.agent, model=self.model, query=self.task)
+            row = self.cache.read(
+                agent=self.agent, model=self.model, task=self.task, kwargs=self.kwargs
+            )
+            self.param.update(**row)
+
             print(
                 f"{datetime.now()} Cache hit for agent='{self.agent}', model='{self.model}' "
                 f"and query='{self.task}'"
@@ -81,33 +109,40 @@ class TransformersAgent(RunInput, param.Parameterized):
             token = self.get_token()
             if not token:
                 self._handle_no_token(self.agent)
-                result = None
                 exception_raised = True
             else:
                 agent = self.get_agent(token=token)
-                if self.kwargs:
-                    kwargs = self.kwargs.copy()
-                else:
-                    kwargs = {}
-                if self.result and "output" not in kwargs:
-                    kwargs["output"] = self.result
-
                 try:
-                    result = agent.run(self.task, remote=self.remote, **kwargs)
+                    run(agent=agent, task=self.task, remote=self.remote, run_output=self, **kwargs)
+                    # self.value = agent.run(task=self.task, remote=self.remote, **kwargs)
                 except Exception as exc:  # pylint: disable=broad-exception-caught
                     self._handle_run_exception(exc)
-                    result = None
+                    self.value = None
                     exception_raised = True
 
-        if result:
-            self.cache.write(agent=self.agent, model=self.model, query=self.task, result=result)
+        if self.value:
+            self.cache.write(
+                agent=self.agent,
+                model=self.model,
+                task=self.task,
+                kwargs=self.kwargs,
+                prompt=self.prompt,
+                explanation=self.explanation,
+                code=self.code,
+                value=self.value,
+            )
+            print(self.value)
         elif not exception_raised:
             self._handle_no_result()
 
-        self.result = result
-        print(result)
+        if not self.value:
+            self.prompt = org_prompt
+            self.code = org_code
+            self.explanation = org_explanation
+            self.value = org_value
+
         self.is_running = False
-        return self.result
+        return self.value
 
     def _handle_no_result(self):
         print("No result returned")

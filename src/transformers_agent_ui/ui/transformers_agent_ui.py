@@ -158,14 +158,14 @@ class TransformersAgentUI(TransformersAgent, pn.viewable.Viewer):
             margin=(15, 5, 10, 5),
         )
 
-    @param.depends("result", "is_running")
+    @param.depends("value", "is_running")
     def _result_view(self):
         if self.is_running:
             return f"""Running `{self.agent=}` and `{self.model=}` on \n\n{self.task}\n\n
 Check the Logs tab for output."""
-        if not self.result:
+        if not self.value:
             return "Click Submit to generate an output"
-        return self.result
+        return self.value
 
     @pn.depends("submit", watch=True)
     def _submit(self):
@@ -174,18 +174,23 @@ Check the Logs tab for output."""
     def _handle_no_token(self, agent):
         message = f"No token found for agent '{agent}'. Please provide one."
         print(message)
-        pn.state.notifications.error(message)
+        if pn.state.notifications:
+            pn.state.notifications.error(message, duration=0)
 
     def _handle_run_exception(self, exc: Exception):
         # openai.error.RateLimitError: You exceeded your current quota, please check your plan
         # and billing details.
         print(exc)
-        pn.state.notifications.error(f"The run failed: {exc}." + " Check the logs.")  # type: ignore
+        if pn.state.notifications:
+            pn.state.notifications.error(  # type: ignore
+                f"The run failed: {exc}." + " Check the logs.", duration=0
+            )
 
     def _handle_no_result(self):
         message = "No result returned"
         print(message)
-        pn.state.notifications.error(message + " Check the logs.")
+        if pn.state.notifications:
+            pn.state.notifications.error(message + " Check the logs.", duration=0)
 
 
 if pn.state.served:

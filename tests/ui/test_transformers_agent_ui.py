@@ -21,11 +21,13 @@ def test_constructor():
 def test_submit():
     """We can submit a run. And do it twice"""
     agent = TransformersAgentUI()
-    assert not agent.result
+    assert not agent.value
 
     agent.param.trigger("submit")
-    assert agent.result
+    assert agent.value
+    assert agent.value != "Running ..."
 
-    agent.result = None
+    agent.value = None
     agent.param.trigger("submit")
-    assert agent.result
+    assert agent.value
+    assert agent.value != "Running ..."

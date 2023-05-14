@@ -24,7 +24,7 @@ class RunInput(param.Parameterized):
             self.param.model.default = AGENT_CONFIGURATION[agent]["default"]
         if "model" in params:
             self.param.model.default = params["model"]
-        if not "kwargs" in params:
+        if "kwargs" not in params:
             params["kwargs"] = {}
         super().__init__(**params)
 

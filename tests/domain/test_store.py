@@ -28,34 +28,44 @@ def test_store(store, image):
     # Given
     agent = "HuggingFace"
     model = "Starcoder"
-    query = "Draw me a picture of rivers and lakes."
-
-    result = image
-    result = "Some text"
+    task = "Draw me a picture of rivers and lakes."
+    kwargs = {"text": "some text"}
+    output = {
+        "prompt": "A",
+        "explanation": "B",
+        "code": "C",
+        "value": image,
+    }
     # Then
-    assert not store.exists(agent, model, query)
-    assert not store.read(agent, model, query)
+    assert not store.exists(agent, model, task, kwargs)
+    assert not store.read(agent, model, task, kwargs)
 
     # When/ Then
-    store.write(agent, model, query, result)
-    assert store.exists(agent, model, query)
-    assert store.read(agent, model, query) == result
+    store.write(agent, model, task, kwargs, **output)
+    assert store.exists(agent, model, task, kwargs)
+    assert store.read(agent, model, task, kwargs) == output
 
     # When/ Then
-    store.delete(agent, model, query)
-    assert not store.exists(agent, model, query)
-    assert not store.read(agent, model, query)
+    store.delete(agent, model, task)
+    assert not store.exists(agent, model, task, kwargs)
+    assert not store.read(agent, model, task, kwargs)
 
 
 def test_pickle(store):
     """We can write and read pickle"""
     agent = "A"
     model = "B"
-    query = "C"
-    result = pytest.fixture  # We expect this to be pickled
+    task = "C"
+    kwargs = {"text": "some text"}
+    output = {
+        "prompt": "A",
+        "explanation": "B",
+        "code": "C",
+        "value": pytest.fixture,  # We expect this to be pickled
+    }
     with warnings.catch_warnings(record=True) as wrn:
-        store.write(agent, model, query, result)
+        store.write(agent, model, task, kwargs, **output)
         assert len(wrn) == 1
         assert "Saved type " in str(wrn[-1].message)
-    actual = store.read(agent, model, query)
-    assert actual == result
+    actual = store.read(agent, model, task, kwargs)
+    assert actual == output
