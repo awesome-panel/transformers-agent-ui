@@ -164,6 +164,5 @@ build/
 test_results/
 script.py
 apps/app.py
-pyproject.toml
 TransformersAgent.db
-assets/
+.store/
