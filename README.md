@@ -137,7 +137,9 @@ I would love to support and receive your contributions. Thanks.
   - [ ] Restrict logs to user session
     - See also [hf #23354](https://github.com/huggingface/transformers/issues/23354)
   - [ ] Restrict store to user session
-- [ ] Deploy to Hugging Face
+  - [ ] Make application non-blocking when used by multiple users
+- [ ] Deploy to Hugging Face. I probably wont be able to as the app needs a lot of power when
+running locally.
 - [ ] Build a sample store and collect data on runs
 - [ ] Enable downloading the output value
 - [ ] Help the app and/ or Panel display the outputs. For example when a tensor is returned Panel
@@ -145,10 +147,12 @@ I would love to support and receive your contributions. Thanks.
 does not know how to display that. And the agent fails if we ask it to return the value wrapped in
 a HoloViz Panel Audio Pane. See [Panel #4836](https://github.com/holoviz/panel/issues/4836)
 - [ ] Profile the `run` and figure out if for example agents should be reused/ cached
+- [ ] Prompt seems to be cut of when displayed in the UI. Fix this
 
-## Maybe list
+## Maybe later list
 
 - [ ] Make the project more specific by calling it hfagent-ui and providing HFAgentUI,
 - [ ] Make the project more general as in agent-ui. We could provide HFAgentUI,
 LangChainAgentUI etc. Or maybe even just AgentUI. Much of the code would be reusable.
 - [ ] Run inference async to make app more performant if possible
+- [ ] Support chat mode.
