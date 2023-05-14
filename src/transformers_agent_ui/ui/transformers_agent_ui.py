@@ -5,7 +5,10 @@ import param
 from torch import Tensor
 
 from transformers_agent_ui.domain.agent import TransformersAgent
-from transformers_agent_ui.ui.asset_editor import AssetEditor
+from transformers_agent_ui.ui.components import (
+    KwargsEditor,
+    get_example_selection_widget,
+)
 from transformers_agent_ui.ui.config import (
     CONFIG,
     STYLES,
@@ -91,11 +94,13 @@ class TransformersAgentUI(TransformersAgent, pn.viewable.Viewer):
         model_input = pn.widgets.RadioButtonGroup.from_param(
             self.param.model, button_style="outline"
         )
+        example_input = get_example_selection_widget(task=self)
         task_input = pn.widgets.TextAreaInput.from_param(
             self.param.task,
             sizing_mode="stretch_width",
             name="Task",
             stylesheets=["textarea { font-size: 2em; }"],
+            description="A short text describing the task to run",
         )
         submit_input = pn.widgets.Button.from_param(
             self.param.submit,
@@ -107,7 +112,7 @@ class TransformersAgentUI(TransformersAgent, pn.viewable.Viewer):
             name="RUN",
         )
         task_input = pn.Column(task_input, submit_input)
-        assets_input = AssetEditor(self.kwargs)
+        assets_input = KwargsEditor(kwargs=self.param.kwargs)
 
         inputs = pn.Column(
             pn.Row(
@@ -130,6 +135,7 @@ class TransformersAgentUI(TransformersAgent, pn.viewable.Viewer):
             ),
             pn.Row(self.param.use_cache, self.param.remote, margin=(15, 5)),
             pn.Column(
+                example_input,
                 task_input,
                 pn.pane.HTML("Arguments", margin=(0, 10)),
                 pn.pane.Alert(

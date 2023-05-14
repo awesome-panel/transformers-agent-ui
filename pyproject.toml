@@ -80,7 +80,7 @@ max-module-lines = 1000
 
 [tool.pylint.'MESSAGES CONTROL']
 max-line-length = 100
-disable = []
+disable = ["too-many-ancestors"]
 
 [tool.mypy]
 python_version = "3.9"
