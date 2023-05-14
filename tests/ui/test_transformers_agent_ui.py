@@ -14,6 +14,7 @@ def test_constructor():
 
     assert isinstance(agent.config, TransformersAgentUIConfig)
     assert isinstance(agent.styles, TransformersAgentUIStyles)
+    assert agent.__panel__()
 
 
 @pytest.mark.slow()

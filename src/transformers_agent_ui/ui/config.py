@@ -14,7 +14,7 @@ class TransformersAgentUIConfig:
     """Configuration settings for the UI"""
 
     title_emoji: str = param.String("🤗")
-    title: str = param.String("Transformers Agent UI")
+    title: str = param.String("Transformers Agent")
     # pylint: disable=line-too-long
     about: str = param.String(
         f"""The purpose of this app is to provide **an effictive user interface for the

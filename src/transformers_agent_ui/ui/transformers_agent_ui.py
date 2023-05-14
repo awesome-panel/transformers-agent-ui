@@ -29,7 +29,7 @@ class TransformersAgentUI(TransformersAgent, pn.viewable.Viewer):
     >>> TransformersAgentUI()
     """
 
-    submit = param.Event()
+    submit = param.Event(doc="Click to run the task")
 
     config: TransformersAgentUIConfig = param.ClassSelector(
         class_=TransformersAgentUIConfig, default=CONFIG
@@ -65,7 +65,7 @@ class TransformersAgentUI(TransformersAgent, pn.viewable.Viewer):
         logs.write("Hi. The logs from your runs will be shown here!")
         # sys.stdout = self._terminal
         about = pn.pane.Markdown(self.config.about, sizing_mode="stretch_width", name="About")
-        settings = pn.Column(self.token_manager, self.param.use_cache, name="Settings")
+        settings = pn.Column(self.token_manager, name="Settings")
 
         tabs = pn.Tabs(
             editor,
@@ -88,8 +88,8 @@ class TransformersAgentUI(TransformersAgent, pn.viewable.Viewer):
         model_input = pn.widgets.RadioButtonGroup.from_param(
             self.param.model, button_style="outline"
         )
-        query_input = pn.widgets.TextAreaInput.from_param(
-            self.param.value,
+        task_input = pn.widgets.TextAreaInput.from_param(
+            self.param.task,
             sizing_mode="stretch_width",
             name="Task",
             stylesheets=["textarea { font-size: 2em; }"],
@@ -98,13 +98,13 @@ class TransformersAgentUI(TransformersAgent, pn.viewable.Viewer):
             self.param.submit,
             button_type="primary",
             sizing_mode="stretch_width",
-            disabled=self.param.running,
-            loading=self.param.running,
+            disabled=self.param.is_running,
+            loading=self.param.is_running,
             stylesheets=[self.styles.submit_button_style_sheet],
-            name="SUBMIT",
+            name="RUN",
         )
-        task_input = pn.Column(query_input, submit_input)
-        assets_input = AssetEditor()
+        task_input = pn.Column(task_input, submit_input)
+        assets_input = AssetEditor(self.kwargs)
 
         inputs = pn.Column(
             pn.Row(
@@ -125,9 +125,17 @@ class TransformersAgentUI(TransformersAgent, pn.viewable.Viewer):
                 model_input,
                 align="start",
             ),
+            pn.Row(self.param.use_cache, self.param.remote, margin=(15, 5)),
             pn.Column(
                 task_input,
-                "Assets",
+                pn.pane.HTML("Arguments", margin=(0, 10)),
+                pn.pane.Alert(
+                    """You can refer to *arguments* in your task by their names. For example \
+                        'image'. You can  also refer to the output on the right via the name \
+                        'output'.""",
+                    alert_type="warning",
+                    margin=(0, 10),
+                ),
                 assets_input,
             ),
         )
@@ -150,10 +158,10 @@ class TransformersAgentUI(TransformersAgent, pn.viewable.Viewer):
             margin=(15, 5, 10, 5),
         )
 
-    @param.depends("result", "running")
+    @param.depends("result", "is_running")
     def _result_view(self):
-        if self.running:
-            return f"""Running `{self.agent=}` and `{self.model=}` on \n\n{self.value}\n\n
+        if self.is_running:
+            return f"""Running `{self.agent=}` and `{self.model=}` on \n\n{self.task}\n\n
 Check the Logs tab for output."""
         if not self.result:
             return "Click Submit to generate an output"

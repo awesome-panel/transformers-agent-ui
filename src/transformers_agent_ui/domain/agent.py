@@ -9,9 +9,10 @@ from datetime import datetime
 import param
 from transformers import HfAgent, OpenAiAgent
 
-from transformers_agent_ui.domain.config import AGENT_CONFIGURATION, DEFAULT_AGENT
+from transformers_agent_ui.domain.config import AGENT_CONFIGURATION
 from transformers_agent_ui.domain.store import Store
 from transformers_agent_ui.domain.token import TokenManager
+from transformers_agent_ui.domain.run_input import RunInput
 
 log = logging.getLogger(__name__)
 
@@ -34,20 +35,14 @@ def _get_agent(agent, model, token):
     raise ValueError(f"The agent {agent} and model {model} is not supported")
 
 
-class TransformersAgent(param.Parameterized):
+class TransformersAgent(RunInput, param.Parameterized):
     """A wrapper of the Hugging Face transformers agent. See
     https://huggingface.co/docs/transformers/transformers_agents"""
 
-    agent = param.Selector(default=DEFAULT_AGENT, objects=sorted(AGENT_CONFIGURATION.keys()))
-    model = param.Selector(
-        default=AGENT_CONFIGURATION[DEFAULT_AGENT]["default"],
-        objects=sorted(AGENT_CONFIGURATION[DEFAULT_AGENT]["models"]),
-    )
-    value = param.String("Draw me a picture of rivers and lakes.", label="Task")
-    assets = param.Dict()
-
     result = param.Parameter(precedence=-1)
-    running = param.Boolean()
+    remote = param.Boolean(default=True, readonly=True)
+
+    is_running = param.Boolean()
 
     use_cache: bool = param.Boolean(
         default=True, doc="If True a Cache is used to speed up run and to bring the the costs."
@@ -56,25 +51,11 @@ class TransformersAgent(param.Parameterized):
     token_manager: TokenManager = param.ClassSelector(class_=TokenManager, precedence=-1)
 
     def __init__(self, **params):
-        if "agent" in params:
-            agent = params["agent"]
-            self.param.agent.default = agent
-            self.param.model.objects = sorted(AGENT_CONFIGURATION[agent]["models"])
-            self.param.model.default = AGENT_CONFIGURATION[agent]["default"]
-        if "model" in params:
-            self.param.model.default = params["model"]
         if "cache" not in params:
             params["cache"] = Store()
         if "token_manager" not in params:
             params["token_manager"] = TokenManager()
         super().__init__(**params)
-
-    @param.depends("agent", watch=True)
-    def _handle_agent_change(self):
-        configuration = AGENT_CONFIGURATION[self.agent]
-        self.param.model.objects = sorted(configuration["models"])
-        self.param.model.default = configuration["default"]
-        self.model = AGENT_CONFIGURATION[self.agent]["default"]
 
     def get_token(self) -> str:
         """Returns the token"""
@@ -87,14 +68,14 @@ class TransformersAgent(param.Parameterized):
     def run(self):
         """Runs the agent, model on the `value`"""
         exception_raised = False
-        self.running = True
+        self.is_running = True
         if self.use_cache and self.cache.exists(
-            agent=self.agent, model=self.model, query=self.value
+            agent=self.agent, model=self.model, query=self.task
         ):
-            result = self.cache.read(agent=self.agent, model=self.model, query=self.value)
+            result = self.cache.read(agent=self.agent, model=self.model, query=self.task)
             print(
                 f"{datetime.now()} Cache hit for agent='{self.agent}', model='{self.model}' "
-                f"and query='{self.value}'"
+                f"and query='{self.task}'"
             )
         else:
             token = self.get_token()
@@ -104,21 +85,28 @@ class TransformersAgent(param.Parameterized):
                 exception_raised = True
             else:
                 agent = self.get_agent(token=token)
+                if self.kwargs:
+                    kwargs = self.kwargs.copy()
+                else:
+                    kwargs = {}
+                if self.result and "output" not in kwargs:
+                    kwargs["output"] = self.result
+
                 try:
-                    result = agent.run(self.value, remote="True")
+                    result = agent.run(self.task, remote=self.remote, **kwargs)
                 except Exception as exc:  # pylint: disable=broad-exception-caught
                     self._handle_run_exception(exc)
                     result = None
                     exception_raised = True
 
         if result:
-            self.cache.write(agent=self.agent, model=self.model, query=self.value, result=result)
+            self.cache.write(agent=self.agent, model=self.model, query=self.task, result=result)
         elif not exception_raised:
             self._handle_no_result()
 
         self.result = result
         print(result)
-        self.running = False
+        self.is_running = False
         return self.result
 
     def _handle_no_result(self):

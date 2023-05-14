@@ -48,7 +48,8 @@ and run
 BOKEH_RESOURCES=cdn panel serve app.py
 ```
 
-![TransformerAgentUI in a notebook](assets/transformers-agent-ui-web-app.png)
+'
+![TransformerAgentUI on a server](assets/transformers-agent-ui-web-app.png)
 
 In order for you to run the inference you will have to provide tokens. Preferably via the
 environment variables
@@ -112,20 +113,34 @@ I would love to support and receive your contributions. Thanks.
 ## Todo List
 
 - [x] Implement TokenManager
-- [ ] Redirect log to Terminal AND to stdout for easier debugging
 - [x] Save every run - also when cache is hit
-- [ ] Add three examples to make it easy to get started
 - [x] Add notification if no token is available
-- [ ] Deploy to Pypi
-- [ ] Deploy to Hugging Face
+- [x] Deploy to Pypi. DONE - See [link](https://pypi.org/project/transformers-agent-ui/)
+- [x] Rename `running` parameter to `is_running` parameter
+- [x] Move use_cache from settings tab to editor tab
+- [ ] Save run prints to store
+- [ ] Redirect log to Terminal AND to stdout for easier debugging
+- [ ] Build a sample store and collect data on runs
 - [ ] Support dynamic arguments (text, image etc) to run function
+  - [ ] As inputs to .run
+  - [ ] Create/ Update from file
+  - [ ] Create/ Update from output
+  - [ ] Delete/ Remove
+- [ ] Test it on lots of examples
+  - [ ] Add specific support for reading and writing more types. Currently most things are pickled.
+- [ ] Add three examples to make it easy to get started
+- [ ] Support enabled `remote` parameter setting. Currently we only support `remote`.
+- [ ] Don't save asset if from cache. Instead reuse.
+- [ ] Make the Cache/ Store useful by providing an interface
 - [ ] Multi user support
   - [ ] Restrict logs to user session
+    - See also [hf #23354](https://github.com/huggingface/transformers/issues/23354)
   - [ ] Restrict store to user session
-- [ ] Don't save asset if from cache. Instead reuse.
-- [ ] Save run prints to logs
-- [ ] Support `remote` parameter setting
-- [ ] Support `return_code` parameter setting
+- [ ] Deploy to Hugging Face
+
+## Maybe list
+
+- [ ] Make the project more specific by calling it hfagent-ui and providing HFAgentUI,
+- [ ] Make the project more general as in agent-ui. We could provide HFAgentUI,
+LangChainAgentUI etc. Or maybe even just AgentUI. Much of the code would be reusable.
 - [ ] Run inference async to make app more performant if possible
-- [ ] Make the Cache/ Store useful by providing an interface
-- [ ] Add specific support for reading and writing more types. Currently most things are pickled.

@@ -17,9 +17,10 @@ class AssetEditor(pn.viewable.Viewer):
     """An editor for managing assets to be used by the agent"""
 
     def __init__(self, assets: Dict | None = None, **params):
-        if not assets:
+        if assets is None:
             assets = {}
-        self._assets = assets.copy()
+        self._assets = assets
+        self._assets["image"] = IMAGE
 
         super().__init__(**params)
 
@@ -28,12 +29,12 @@ class AssetEditor(pn.viewable.Viewer):
 
     def _layout(self):
         layout = pn.Column(sizing_mode="stretch_width")
-        for name, asset in self.assets.items():
+        for name, asset in self._assets.items():
             layout.append(pn.pane.Markdown(f"`{name}`", margin=(0, 10)))
             layout.append(pn.panel(asset, width=200, height=200))
         return layout
 
-    @property
-    def assets(self) -> Dict:
-        """Returns the dictionary of assets"""
-        return {"image": IMAGE}
+    # @property
+    # def assets(self) -> Dict:
+    #     """Returns the dictionary of assets"""
+    #     return self._assets
