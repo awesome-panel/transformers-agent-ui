@@ -1,6 +1,8 @@
 """Provides the TransformersAgentUI"""
+import numpy as np
 import panel as pn
 import param
+from torch import Tensor
 
 from transformers_agent_ui.domain.agent import TransformersAgent
 from transformers_agent_ui.ui.asset_editor import AssetEditor
@@ -175,10 +177,33 @@ class TransformersAgentUI(TransformersAgent, pn.viewable.Viewer):
             sizing_mode="stretch_width",
         )
 
+    def _get_last_tool(self) -> str:
+        """Returns the last tool used in the code"""
+        code = self.code
+
+        if not code:
+            return "NA"
+
+        lines = code.splitlines()
+        if "text_reader" in lines[-1]:
+            return "text_reader"
+        return ""
+
     def get_value_pane(self):
         """Returns a converted value that can be displayed by Panel"""
         # Here we should help the agent return something that can be displayed
-        return self.value
+        value = self.value
+        tool = self._get_last_tool()
+
+        if tool == "text_reader":
+            if isinstance(value, Tensor) and hasattr(value, "numpy"):
+                value = value.numpy()  # pylint: disable=no-member
+            if isinstance(value, np.ndarray) and value.dtype in (np.float32,):
+                value = (value * 32768.0).astype(np.int16)
+            if isinstance(value, np.ndarray):
+                return pn.pane.Audio(value, sample_rate=16000)
+
+        return value
 
     @pn.depends("submit", watch=True)
     def _submit(self):
@@ -188,22 +213,20 @@ class TransformersAgentUI(TransformersAgent, pn.viewable.Viewer):
         message = f"No token found for agent '{agent}'. Please provide one."
         print(message)
         if pn.state.notifications:
-            pn.state.notifications.error(message, duration=0)
+            pn.state.notifications.error(message, duration=12000)
 
     def _handle_run_exception(self, exc: Exception):
         # openai.error.RateLimitError: You exceeded your current quota, please check your plan
         # and billing details.
         print(exc)
         if pn.state.notifications:
-            pn.state.notifications.error(  # type: ignore
-                f"The run failed: {exc}." + " Check the logs.", duration=0
-            )
+            pn.state.notifications.error(f"The run failed: {exc}.", duration=12000)  # type: ignore
 
     def _handle_no_result(self):
         message = "No result returned"
         print(message)
         if pn.state.notifications:
-            pn.state.notifications.error(message + " Check the logs.", duration=0)
+            pn.state.notifications.error(message, duration=12000)
 
 
 if pn.state.served:

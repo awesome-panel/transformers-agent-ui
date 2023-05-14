@@ -1,4 +1,4 @@
-"""Provides the RunInput"""
+"""Provides the RunInput, RunOutput and Run"""
 import param
 
 from transformers_agent_ui.domain.config import AGENT_CONFIGURATION, DEFAULT_AGENT
@@ -34,3 +34,17 @@ class RunInput(param.Parameterized):
         self.param.model.objects = sorted(configuration["models"])
         self.param.model.default = configuration["default"]
         self.model = AGENT_CONFIGURATION[self.agent]["default"]
+
+
+class RunOutput(param.Parameterized):
+    """A model of the Agent run output"""
+
+    value = param.Parameter()
+
+    prompt = param.String()
+    explanation = param.String()
+    code = param.String()
+
+
+class Run(RunInput, RunOutput):
+    """A Model of the input and output arguments of a run"""

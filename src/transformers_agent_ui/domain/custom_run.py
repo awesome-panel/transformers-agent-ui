@@ -13,7 +13,7 @@ from transformers.tools.agents import (
 )
 from transformers.tools.python_interpreter import InterpretorError, evaluate_ast
 
-from transformers_agent_ui.domain.run_output import RunOutput
+from transformers_agent_ui.domain.run import RunOutput
 
 
 # Source: transformers/tools/python_interpreter.py

@@ -128,6 +128,7 @@ I would love to support and receive your contributions. Thanks.
 - [ ] Get better feedback on run exceptions back
 - [ ] Test it on lots of examples
   - [ ] Add specific support for reading and writing more types. Currently most things are pickled.
+    - torch.Tensor is often returned and can be saved
 - [ ] Add three examples to make it easy to get started
 - [ ] Support enabled `remote` parameter setting. Currently we only support `remote`.
 - [ ] Don't save asset if from cache. Instead reuse.
@@ -140,8 +141,10 @@ I would love to support and receive your contributions. Thanks.
 - [ ] Build a sample store and collect data on runs
 - [ ] Enable downloading the output value
 - [ ] Help the app and/ or Panel display the outputs. For example when a tensor is returned Panel
+- [ ] Specifically test that the output of each tool is supported
 does not know how to display that. And the agent fails if we ask it to return the value wrapped in
 a HoloViz Panel Audio Pane. See [Panel #4836](https://github.com/holoviz/panel/issues/4836)
+- [ ] Profile the `run` and figure out if for example agents should be reused/ cached
 
 ## Maybe list
 

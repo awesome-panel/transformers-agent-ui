@@ -1,6 +1,6 @@
 """We have a Parameterized wrapper for the Hugging Face Transformers Agent"""
 # pylint: disable=missing-function-docstring
-from transformers_agent_ui.domain.run_input import AGENT_CONFIGURATION, RunInput
+from transformers_agent_ui.domain.run import AGENT_CONFIGURATION, RunInput
 
 
 def test_constructor():

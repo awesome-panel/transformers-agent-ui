@@ -11,8 +11,7 @@ from transformers import HfAgent, OpenAiAgent
 
 from transformers_agent_ui.domain.config import AGENT_CONFIGURATION
 from transformers_agent_ui.domain.custom_run import run
-from transformers_agent_ui.domain.run_input import RunInput
-from transformers_agent_ui.domain.run_output import RunOutput
+from transformers_agent_ui.domain.run import Run
 from transformers_agent_ui.domain.store import Store
 from transformers_agent_ui.domain.token import TokenManager
 
@@ -37,7 +36,7 @@ def _get_agent(agent, model, token):
     raise ValueError(f"The agent {agent} and model {model} is not supported")
 
 
-class TransformersAgent(RunInput, RunOutput, param.Parameterized):
+class TransformersAgent(Run):
     """A wrapper of the Hugging Face transformers agent. See
     https://huggingface.co/docs/transformers/transformers_agents"""
 
@@ -72,7 +71,7 @@ class TransformersAgent(RunInput, RunOutput, param.Parameterized):
             kwargs = self.kwargs.copy()
         else:
             kwargs = {}
-        if self.value and "value" not in kwargs:
+        if self.value is not None and "value" not in kwargs:
             kwargs["value"] = self.value
         return kwargs
 
@@ -131,7 +130,7 @@ class TransformersAgent(RunInput, RunOutput, param.Parameterized):
             self._handle_no_result()
 
         if self.value is None or self.value == "":
-            self.value = "No output generated. Check the logs"
+            self.value = "No output generated"
 
         self.is_running = False
         return self.value
