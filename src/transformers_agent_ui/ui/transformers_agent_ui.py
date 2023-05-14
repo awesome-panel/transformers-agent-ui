@@ -37,6 +37,7 @@ class TransformersAgentUI(TransformersAgent, pn.viewable.Viewer):
     styles: TransformersAgentUIStyles = param.ClassSelector(
         class_=TransformersAgentUIStyles, default=STYLES
     )
+    # pane_type = param.Selector(objects=[None, pn.pane.Audio])
 
     def __init__(self, **params):
         if "token_manager" not in params:
@@ -131,8 +132,8 @@ class TransformersAgentUI(TransformersAgent, pn.viewable.Viewer):
                 pn.pane.HTML("Arguments", margin=(0, 10)),
                 pn.pane.Alert(
                     """You can refer to *arguments* in your task by their names. For example \
-                        'image'. You can  also refer to the output on the right via the name \
-                        'output'.""",
+                        'image'. You can  also refer to the output value on the right via the name \
+                        'value'.""",
                     alert_type="warning",
                     margin=(0, 10),
                 ),
@@ -140,7 +141,7 @@ class TransformersAgentUI(TransformersAgent, pn.viewable.Viewer):
             ),
         )
 
-        outputs = pn.panel(self._result_view, align="center")
+        outputs = pn.panel(self._value_view, align="center")
 
         return pn.Row(
             pn.Column(
@@ -159,12 +160,24 @@ class TransformersAgentUI(TransformersAgent, pn.viewable.Viewer):
         )
 
     @param.depends("value", "is_running")
-    def _result_view(self):
-        if self.is_running:
-            return f"""Running `{self.agent=}` and `{self.model=}` on \n\n{self.task}\n\n
-Check the Logs tab for output."""
-        if not self.value:
+    def _value_view(self):
+        if not self.is_running and self.value is None:
             return "Click Submit to generate an output"
+        if self.is_running:
+            return f"""Running `{self.agent=}` and `{self.model=}` on \n\n{self.task}"""
+
+        return pn.Tabs(
+            ("VALUE", self.get_value_pane),
+            ("CODE", pn.widgets.Terminal(self.code)),
+            ("EXPLANATION", self.explanation),
+            ("PROMPT", self.prompt),
+            align="center",
+            sizing_mode="stretch_width",
+        )
+
+    def get_value_pane(self):
+        """Returns a converted value that can be displayed by Panel"""
+        # Here we should help the agent return something that can be displayed
         return self.value
 
     @pn.depends("submit", watch=True)

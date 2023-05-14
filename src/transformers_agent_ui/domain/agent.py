@@ -72,18 +72,13 @@ class TransformersAgent(RunInput, RunOutput, param.Parameterized):
             kwargs = self.kwargs.copy()
         else:
             kwargs = {}
-        if self.value and "output" not in kwargs:
-            kwargs["output"] = self.value
+        if self.value and "value" not in kwargs:
+            kwargs["value"] = self.value
         return kwargs
 
     def run(self):
         """Runs the agent, model on the `value`"""
         exception_raised = False
-
-        org_prompt = self.prompt
-        org_code = self.code
-        org_explanation = self.explanation
-        org_value = self.value
 
         kwargs = self._get_run_kwargs()
 
@@ -103,7 +98,7 @@ class TransformersAgent(RunInput, RunOutput, param.Parameterized):
 
             print(
                 f"{datetime.now()} Cache hit for agent='{self.agent}', model='{self.model}' "
-                f"and query='{self.task}'"
+                f"and task='{self.task}'"
             )
         else:
             token = self.get_token()
@@ -120,7 +115,7 @@ class TransformersAgent(RunInput, RunOutput, param.Parameterized):
                     self.value = None
                     exception_raised = True
 
-        if self.value:
+        if not self.value is None:
             self.cache.write(
                 agent=self.agent,
                 model=self.model,
@@ -135,11 +130,8 @@ class TransformersAgent(RunInput, RunOutput, param.Parameterized):
         elif not exception_raised:
             self._handle_no_result()
 
-        if not self.value:
-            self.prompt = org_prompt
-            self.code = org_code
-            self.explanation = org_explanation
-            self.value = org_value
+        if self.value is None or self.value == "":
+            self.value = "No output generated. Check the logs"
 
         self.is_running = False
         return self.value

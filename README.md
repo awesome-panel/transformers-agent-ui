@@ -138,6 +138,10 @@ I would love to support and receive your contributions. Thanks.
   - [ ] Restrict store to user session
 - [ ] Deploy to Hugging Face
 - [ ] Build a sample store and collect data on runs
+- [ ] Enable downloading the output value
+- [ ] Help the app and/ or Panel display the outputs. For example when a tensor is returned Panel
+does not know how to display that. And the agent fails if we ask it to return the value wrapped in
+a HoloViz Panel Audio Pane. See [Panel #4836](https://github.com/holoviz/panel/issues/4836)
 
 ## Maybe list
 

@@ -37,6 +37,7 @@ dependencies = [
     "openai",
     "panel>=1.0.0rc8",
     "param<2.0",
+    "torchaudio",
     "transformers[agents]",
 ]
 dynamic = ["version"]
