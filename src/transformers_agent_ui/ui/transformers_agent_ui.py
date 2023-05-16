@@ -50,17 +50,16 @@ class TransformersAgentUI(TransformersAgent, pn.viewable.Viewer):
         super().__init__(**params)
 
     def __panel__(self):
-        logo = pn.pane.PNG(
-            object="https://pyviz-dev.github.io/panel/_static/logo_horizontal_light_theme.png",
-            link_url="https://panel.holoviz.org",
-            alt_text="Power by Panel. The powerful data exploration & web app framework for Python",
-            height=50,
-        )
+        # logo = pn.pane.PNG(
+        #     object="https://pyviz-dev.github.io/panel/_static/logo_horizontal_light_theme.png",
+        #     link_url="https://panel.holoviz.org",
+        #     height=50,
+        # )
 
         header = pn.Row(
             f"<h1>{self.config.title_emoji} {self.config.title}</h1>",
             pn.layout.HSpacer(),
-            logo,
+            # logo,
             styles=self.styles.header_styles,
             sizing_mode="stretch_width",
             margin=0,
@@ -94,6 +93,33 @@ class TransformersAgentUI(TransformersAgent, pn.viewable.Viewer):
         model_input = pn.widgets.RadioButtonGroup.from_param(
             self.param.model, button_style="outline"
         )
+        show_details_input = pn.widgets.Checkbox(
+            value=False,
+            name="Show details",
+            description="If Checked more advanced settings are show",
+        )
+        details = pn.Column(
+            pn.Row(
+                pn.pane.HTML(
+                    "Agent",
+                    styles={
+                        "padding-top": "0.5em",
+                    },
+                ),
+                agent_input,
+                pn.pane.HTML(
+                    "Model",
+                    styles={
+                        "padding-top": "0.5em",
+                        "padding-left": "0.5em",
+                    },
+                ),
+                model_input,
+                align="start",
+            ),
+            pn.Row(self.param.use_cache, self.param.remote, margin=(15, 5)),
+            visible=show_details_input,
+        )
         example_input = get_example_selection_widget(task=self)
         task_input = pn.widgets.TextAreaInput.from_param(
             self.param.task,
@@ -115,25 +141,8 @@ class TransformersAgentUI(TransformersAgent, pn.viewable.Viewer):
         assets_input = KwargsEditor(kwargs=self.param.kwargs)
 
         inputs = pn.Column(
-            pn.Row(
-                pn.pane.HTML(
-                    "Agent",
-                    styles={
-                        "padding-top": "0.5em",
-                    },
-                ),
-                agent_input,
-                pn.pane.HTML(
-                    "Model",
-                    styles={
-                        "padding-top": "0.5em",
-                        "padding-left": "0.5em",
-                    },
-                ),
-                model_input,
-                align="start",
-            ),
-            pn.Row(self.param.use_cache, self.param.remote, margin=(15, 5)),
+            show_details_input,
+            details,
             pn.Column(
                 example_input,
                 task_input,
@@ -170,7 +179,7 @@ class TransformersAgentUI(TransformersAgent, pn.viewable.Viewer):
     @param.depends("value", "is_running")
     def _value_view(self):
         if not self.is_running and self.value is None:
-            return "Click Submit to generate an output"
+            return "Click RUN to generate an output"
         if self.is_running:
             return f"""Running `{self.agent=}` and `{self.model=}` on \n\n{self.task}"""
 
@@ -190,10 +199,15 @@ class TransformersAgentUI(TransformersAgent, pn.viewable.Viewer):
         if not code:
             return "NA"
 
-        lines = code.splitlines()
-        if "text_reader" in lines[-1]:
-            return "text_reader"
-        return ""
+        tools = ["text_reader"]
+        last_index = {code.rindex(tool): tool for tool in tools if tool in code}
+        if not last_index:
+            return ""
+
+        max_last_index = max(last_index)
+        last_tool = last_index[max_last_index]
+
+        return last_tool
 
     def get_value_pane(self):
         """Returns a converted value that can be displayed by Panel"""
